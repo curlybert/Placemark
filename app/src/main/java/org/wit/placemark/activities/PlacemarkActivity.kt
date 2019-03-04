@@ -1,5 +1,6 @@
 package org.wit.placemark.activities
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -11,6 +12,9 @@ import org.jetbrains.anko.startActivityForResult
 import org.jetbrains.anko.toast
 import org.wit.placemark.models.PlacemarkModel
 import org.wit.placemark.R
+import org.wit.placemark.helpers.readImage
+import org.wit.placemark.helpers.readImageFromPath
+import org.wit.placemark.helpers.showImagePicker
 import org.wit.placemark.main.MainApp
 
 class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
@@ -19,6 +23,7 @@ class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
     //val placemarks = ArrayList<PlacemarkModel>()
     lateinit var app : MainApp
     var edit = false
+    val IMAGE_REQUEST = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +40,7 @@ class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
             placemark = intent.extras.getParcelable<PlacemarkModel>("placemark_edit")
             placemarkTitle.setText(placemark.title)
             description.setText(placemark.description)
+            placemarkImage.setImageBitmap(readImageFromPath(this, placemark.image))
             btnAdd.setText(R.string.save_placemark)
         }
 
@@ -54,6 +60,22 @@ class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
             setResult(AppCompatActivity.RESULT_OK)
             finish()
         }
+
+        chooseImage.setOnClickListener {
+            showImagePicker(this, IMAGE_REQUEST)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            IMAGE_REQUEST -> {
+                if (data != null) {
+                    placemark.image = data.getData().toString()
+                    placemarkImage.setImageBitmap(readImage(this, resultCode, data))
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -67,4 +89,5 @@ class PlacemarkActivity : AppCompatActivity(), AnkoLogger {
         }
         return super.onOptionsItemSelected(item)
     }
+
 }
